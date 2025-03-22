@@ -1,0 +1,19 @@
+{
+  "name": "functions",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node build.js && node dist/crypto-rsi-analyzer.js"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "lib/main.js",
+  "dependencies": {
+    "technicalindicators": "^3.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.1",
+    "typescript": "^5.8.2"
+  },
+  "private": true
+}
