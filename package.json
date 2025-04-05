@@ -9,6 +9,10 @@
   },
   "main": "lib/main.js",
   "dependencies": {
+    "axios": "^1.8.4",
+    "esbuild-plugin-copy": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "puppeteer": "^24.6.0",
     "technicalindicators": "^3.1.0"
   },
   "devDependencies": {

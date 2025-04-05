@@ -12,67 +12,110 @@ import { RsiHiddenBearishDivergenceService } from "./rsi-strategies/rsi-hidden-b
 import { RsiBullishDivergenceService } from "./rsi-strategies/rsi-bullish-divergence.service";
 import { RsiOverboughtService } from "./rsi-strategies/rsi-overbought.service";
 import { RsiOversoldService } from "./rsi-strategies/rsi-oversold.service";
+import {
+  CandlestickData,
+  RsiCandlestickData,
+} from "../models/candlestick-data.model";
 
 export class RsiDivergenceService {
   public static findRsiDivergence(
-    closingPrices: number[],
+    candlestickData: RsiCandlestickData[],
     timeFrame: BinanceChartTimeFrames
   ): RsiDivergenceResult {
     /* closingPrices = [......................., (last_candle - 2), (last_candle - 1), last_candle] */
 
-    const rsi14PeriodData = this.extractRsiDataFromClosingPrices(
-      closingPrices,
-      14
+    // const rsi14PeriodData = this.extractRsiDataFromClosingPrices(
+    //   closingPrices,
+    //   14
+    // );
+
+    const selectedCandlestickData = candlestickData.slice(
+      candlestickData.length - 66,
+      candlestickData.length
     );
 
     const rsiResult: RsiDivergenceResult = {
       divergence: RsiDivergenceTypes.NotAvailable,
       timeFrame: timeFrame,
       direction: RsiDivergenceDirection.NotAvailable,
+      candleDistance: 0,
     };
 
-    if (!rsi14PeriodData) {
-      return rsiResult;
+    const rsiBullishResult = RsiBullishDivergenceService.hasDivergence(
+      selectedCandlestickData,
+      timeFrame
+    );
+    if (rsiBullishResult.divergence == RsiDivergenceTypes.Bullish) {
+      return rsiBullishResult;
     }
 
-    if (RsiBullishDivergenceService.hasDivergence(rsi14PeriodData)) {
-      rsiResult.divergence = RsiDivergenceTypes.Bullish;
-      rsiResult.direction = RsiDivergenceDirection.Bullish;
-    } else if (RsiBearishDivergenceService.hasDivergence(rsi14PeriodData)) {
-      rsiResult.divergence = RsiDivergenceTypes.Bearish;
-      rsiResult.direction = RsiDivergenceDirection.Bearish;
-    } else {
-      if (timeFrame != BinanceChartTimeFrames.chart15minute) {
-        if (RsiHiddenBullishDivergenceService.hasDivergence(rsi14PeriodData)) {
-          rsiResult.divergence = RsiDivergenceTypes.HiddenBullish;
-          rsiResult.direction = RsiDivergenceDirection.Bullish;
-        } else if (
-          RsiHiddenBearishDivergenceService.hasDivergence(rsi14PeriodData)
-        ) {
-          rsiResult.divergence = RsiDivergenceTypes.HiddenBearish;
-          rsiResult.direction = RsiDivergenceDirection.Bearish;
-        }
-      }
+    const rsiBearishResult = RsiBearishDivergenceService.hasDivergence(
+      selectedCandlestickData,
+      timeFrame
+    );
+    if (rsiBearishResult.divergence == RsiDivergenceTypes.Bearish) {
+      return rsiBearishResult;
     }
 
-    if (rsiResult.divergence === RsiDivergenceTypes.NotAvailable) {
-      const rsi5PeriodData = this.extractRsiDataFromClosingPrices(
-        closingPrices,
-        5
+    const rsiHiddenBullishResult =
+      RsiHiddenBullishDivergenceService.hasDivergence(
+        selectedCandlestickData,
+        timeFrame
       );
-
-      if (!rsi5PeriodData) {
-        return rsiResult;
-      }
-
-      if (RsiOverboughtService.hasOverbought(rsi5PeriodData, timeFrame)) {
-        rsiResult.divergence = RsiDivergenceTypes.OverBought;
-        rsiResult.direction = RsiDivergenceDirection.Bearish;
-      } else if (RsiOversoldService.hasOversold(rsi5PeriodData, timeFrame)) {
-        rsiResult.divergence = RsiDivergenceTypes.OverSold;
-        rsiResult.direction = RsiDivergenceDirection.Bullish;
-      }
+    if (rsiHiddenBullishResult.divergence == RsiDivergenceTypes.HiddenBullish) {
+      return rsiHiddenBullishResult;
     }
+
+    const rsiHiddenBearishResult = RsiBearishDivergenceService.hasDivergence(
+      selectedCandlestickData,
+      timeFrame
+    );
+    if (rsiHiddenBearishResult.divergence == RsiDivergenceTypes.HiddenBearish) {
+      return rsiHiddenBearishResult;
+    }
+
+    return rsiResult;
+
+    ///////////////////////////////////////////////////////
+
+    // if (RsiBullishDivergenceService.hasDivergence(rsi14PeriodData)) {
+    //   rsiResult.divergence = RsiDivergenceTypes.Bullish;
+    //   rsiResult.direction = RsiDivergenceDirection.Bullish;
+    // } else if (RsiBearishDivergenceService.hasDivergence(rsi14PeriodData)) {
+    //   rsiResult.divergence = RsiDivergenceTypes.Bearish;
+    //   rsiResult.direction = RsiDivergenceDirection.Bearish;
+    // } else {
+    //   if (timeFrame != BinanceChartTimeFrames.chart5minute) {
+    //     if (RsiHiddenBullishDivergenceService.hasDivergence(rsi14PeriodData)) {
+    //       rsiResult.divergence = RsiDivergenceTypes.HiddenBullish;
+    //       rsiResult.direction = RsiDivergenceDirection.Bullish;
+    //     } else if (
+    //       RsiHiddenBearishDivergenceService.hasDivergence(rsi14PeriodData)
+    //     ) {
+    //       rsiResult.divergence = RsiDivergenceTypes.HiddenBearish;
+    //       rsiResult.direction = RsiDivergenceDirection.Bearish;
+    //     }
+    //   }
+    // }
+
+    // if (rsiResult.divergence === RsiDivergenceTypes.NotAvailable) {
+    //   const rsi7PeriodData = this.extractRsiDataFromClosingPrices(
+    //     closingPrices,
+    //     7
+    //   );
+
+    //   if (!rsi7PeriodData) {
+    //     return rsiResult;
+    //   }
+
+    //   if (RsiOverboughtService.hasOverbought(rsi7PeriodData, timeFrame)) {
+    //     rsiResult.divergence = RsiDivergenceTypes.OverBought;
+    //     rsiResult.direction = RsiDivergenceDirection.Bearish;
+    //   } else if (RsiOversoldService.hasOversold(rsi7PeriodData, timeFrame)) {
+    //     rsiResult.divergence = RsiDivergenceTypes.OverSold;
+    //     rsiResult.direction = RsiDivergenceDirection.Bullish;
+    //   }
+    // }
 
     return rsiResult;
   }

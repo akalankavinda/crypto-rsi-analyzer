@@ -1,13 +1,23 @@
+import { RsiCandlestickData } from "../../models/candlestick-data.model";
+import { BinanceChartTimeFrames } from "../../models/chartTimeFrames.enum";
+import { RsiDivergenceResult } from "../../models/rsi-divergence-result.model";
+import {
+  RsiDivergenceDirection,
+  RsiDivergenceTypes,
+} from "../../models/rsi-divergence-types.enum";
 import { RsiProcessedData } from "../../models/rsi-processed-data.model";
 
 export class RsiHiddenBullishDivergenceService {
-  public static hasDivergence(rsiData: RsiProcessedData[]): boolean {
-    let rsiLowestBottom: RsiProcessedData = rsiData[rsiData.length - 3];
+  public static hasDivergence(
+    rsiData: RsiCandlestickData[],
+    timeFrame: BinanceChartTimeFrames
+  ): RsiDivergenceResult {
+    let rsiLowestBottom = rsiData[rsiData.length - 3];
 
-    const last1stRsi = rsiData[rsiData.length - 2].rsiValue;
-    const last2ndRsi = rsiData[rsiData.length - 3].rsiValue;
-    const last3rdRsi = rsiData[rsiData.length - 4].rsiValue;
-    const last4thRsi = rsiData[rsiData.length - 5].rsiValue;
+    const last1stRsi = rsiData[rsiData.length - 2].rsi;
+    const last2ndRsi = rsiData[rsiData.length - 3].rsi;
+    const last3rdRsi = rsiData[rsiData.length - 4].rsi;
+    const last4thRsi = rsiData[rsiData.length - 5].rsi;
 
     // 1st condition
     let lastClosedCandleFormedLowestBottom =
@@ -16,7 +26,7 @@ export class RsiHiddenBullishDivergenceService {
       last3rdRsi < last4thRsi;
 
     // 2nd condition
-    const lowestBottomRsiIsBelow50 = rsiLowestBottom.rsiValue < 50;
+    const lowestBottomRsiIsBelow50 = rsiLowestBottom.rsi < 50;
 
     let rsi2ndLowestBottomFound = false;
     let rsi2ndLowestBottomIndex = rsiData.length - 10;
@@ -24,10 +34,10 @@ export class RsiHiddenBullishDivergenceService {
     for (let i1 = rsi2ndLowestBottomIndex; i1 > 3; i1--) {
       const rsi2ndLowestBottom = rsiData[i1];
 
-      const bottomAfterRsi = rsiData[i1 + 1].rsiValue;
-      const bottomRsi = rsiData[i1].rsiValue;
-      const bottomBeforeRsi = rsiData[i1 - 1].rsiValue;
-      const bottomBefore2Rsi = rsiData[i1 - 2].rsiValue;
+      const bottomAfterRsi = rsiData[i1 + 1].rsi;
+      const bottomRsi = rsiData[i1].rsi;
+      const bottomBeforeRsi = rsiData[i1 - 1].rsi;
+      const bottomBefore2Rsi = rsiData[i1 - 2].rsi;
 
       // 3rd condition
       const hasFormedBottomPattern =
@@ -37,33 +47,33 @@ export class RsiHiddenBullishDivergenceService {
 
       // 4th condition
       const bottomRsiIsHigherThanLowestBottom =
-        rsi2ndLowestBottom.rsiValue > rsiLowestBottom.rsiValue;
+        rsi2ndLowestBottom.rsi > rsiLowestBottom.rsi;
 
       // 5th condition
       const pricesShowAscendingOrder =
-        rsi2ndLowestBottom.closePrice < rsiLowestBottom.closePrice;
+        rsi2ndLowestBottom.close < rsiLowestBottom.close;
 
       // 6th condition
       let noRsiBottomsInBetween = true;
 
       // y = mx + c
       let bulGradient =
-        (rsiLowestBottom.rsiValue - rsi2ndLowestBottom.rsiValue) /
+        (rsiLowestBottom.rsi - rsi2ndLowestBottom.rsi) /
         (rsiLowestBottom.eventNumber - rsi2ndLowestBottom.eventNumber); // gradient (m) = (y-c) / x
 
       let bulIntercept =
-        rsiLowestBottom.rsiValue - bulGradient * rsiLowestBottom.eventNumber; // intercept (c) = y - mx
+        rsiLowestBottom.rsi - bulGradient * rsiLowestBottom.eventNumber; // intercept (c) = y - mx
 
       let bottomsTouchingLine: number[] = [];
 
-      rsiData.forEach((rsiWithPrice: RsiProcessedData) => {
+      rsiData.forEach((rsiWithPrice) => {
         bottomsTouchingLine.push(
           bulGradient * rsiWithPrice.eventNumber + bulIntercept
         );
       });
 
       for (let i2 = rsiData.length - 3; i2 >= i1 - 3; i2--) {
-        if (rsiData[i2].rsiValue < bottomsTouchingLine[i2]) {
+        if (rsiData[i2].rsi < bottomsTouchingLine[i2]) {
           noRsiBottomsInBetween = false;
         }
       }
@@ -75,6 +85,7 @@ export class RsiHiddenBullishDivergenceService {
         noRsiBottomsInBetween
       ) {
         rsi2ndLowestBottomFound = true;
+        rsi2ndLowestBottomIndex = i1;
       }
     }
 
@@ -83,6 +94,20 @@ export class RsiHiddenBullishDivergenceService {
       rsi2ndLowestBottomFound &&
       lowestBottomRsiIsBelow50;
 
-    return rsiHiddenBullishDivergenceFound;
+    const rsiResult: RsiDivergenceResult = {
+      divergence: RsiDivergenceTypes.NotAvailable,
+      timeFrame: timeFrame,
+      direction: RsiDivergenceDirection.NotAvailable,
+      candleDistance: 0,
+    };
+
+    if (rsiHiddenBullishDivergenceFound) {
+      const candleDistance = rsiData.length - rsi2ndLowestBottomIndex;
+      rsiResult.divergence = RsiDivergenceTypes.HiddenBullish;
+      rsiResult.direction = RsiDivergenceDirection.Bullish;
+      rsiResult.candleDistance = candleDistance;
+    }
+
+    return rsiResult;
   }
 }

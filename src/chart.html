@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script src="https://unpkg.com/lightweight-charts@5.0.5/dist/lightweight-charts.standalone.production.js"></script>
+  </head>
+  <body>
+    <div id="candlestick-chart"></div>
+    <script>
+      const chartOptions = {
+        width: 1000,
+        height: 750,
+        layout: {
+          textColor: "white",
+          background: { type: "solid", color: "#141823" },
+          attributionLogo: false,
+        },
+        crosshair: {
+          vertLine: {
+            labelVisible: false,
+          },
+        },
+        // hide the grid lines
+        grid: {
+          vertLines: {
+            color: "#272b36",
+          },
+          horzLines: {
+            color: "#272b36",
+          },
+        },
+        leftPriceScale: {
+          visible: false, // Hide left price scale
+        },
+        rightPriceScale: {
+          borderVisible: false,
+          visible: false,
+          // scaleMargins: {
+          //   top: 0.02, // Small margin on top
+          //   bottom: 0.6, // Candlestick takes 70%, RSI takes 30%
+          // },
+        },
+        timeScale: {
+          visible: false,
+        },
+      };
+      const chart = LightweightCharts.createChart(document.body, chartOptions);
+
+      const candlestickSeries = chart.addSeries(
+        LightweightCharts.CandlestickSeries,
+        {
+          upColor: "#26a69a",
+          downColor: "#ef5350",
+          borderVisible: false,
+          wickUpColor: "#26a69a",
+          wickDownColor: "#ef5350",
+          priceScaleId: "candlestick",
+          priceLineVisible: false,
+        }
+      );
+      const rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {
+        color: "#5fb2ff",
+        lineWidth: 2,
+        priceScaleId: "rsi",
+        priceLineVisible: false,
+      });
+
+      const candlestickLineSeries = chart.addSeries(
+        LightweightCharts.LineSeries,
+        {
+          color: "#ffdb31",
+          lineWidth: 2,
+          priceScaleId: "candlestick",
+          priceLineVisible: false,
+        }
+      );
+
+      const rsiLineSeries = chart.addSeries(LightweightCharts.LineSeries, {
+        color: "#ffdb31",
+        lineWidth: 2,
+        priceScaleId: "rsi",
+        priceLineVisible: false,
+      });
+
+      chart.priceScale("candlestick").applyOptions({
+        scaleMargins: {
+          top: 0.05, // RSI starts after 70%
+          bottom: 0.36, // Small margin at the bottom
+        },
+        borderColor: "#555",
+      });
+
+      chart.priceScale("rsi").applyOptions({
+        scaleMargins: {
+          top: 0.75, // RSI starts after 70%
+          bottom: 0.1, // Small margin at the bottom
+        },
+        borderColor: "#fff",
+      });
+
+      function setChartData(chartData, rsiChartData, candleGap) {
+        candlestickSeries.setData(chartData);
+        rsiSeries.setData(rsiChartData);
+
+        chart.timeScale().fitContent();
+
+        chart.timeScale().setVisibleRange({
+          from: chartData[chartData.length - 100].time,
+          to: chartData[chartData.length - 1].time,
+        });
+
+        chart.timeScale().scrollToPosition(10, false);
+
+        rsiSeries.createPriceLine({
+          price: 70,
+          color: "#515151",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.LargeDashed, // Makes it a dashed line
+          axisLabelVisible: true,
+          title: "RSI 70",
+        });
+
+        rsiSeries.createPriceLine({
+          price: 50,
+          color: "#3a3a3a",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.LargeDashed,
+          axisLabelVisible: true,
+          title: "RSI 30",
+        });
+
+        rsiSeries.createPriceLine({
+          price: 30,
+          color: "#515151",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.LargeDashed, // Makes it a dashed line
+          axisLabelVisible: true,
+          title: "RSI 30",
+        });
+
+        candlestickLineSeries.setData([
+          {
+            time: chartData[chartData.length - candleGap].time,
+            value: chartData[chartData.length - candleGap].close,
+          },
+          {
+            time: chartData[chartData.length - 3].time,
+            value: chartData[chartData.length - 3].close,
+          },
+        ]);
+
+        rsiLineSeries.setData([
+          {
+            time: rsiChartData[rsiChartData.length - candleGap].time,
+            value: rsiChartData[rsiChartData.length - candleGap].value,
+          },
+          {
+            time: rsiChartData[rsiChartData.length - 3].time,
+            value: rsiChartData[rsiChartData.length - 3].value,
+          },
+        ]);
+      }
+    </script>
+  </body>
+</html>

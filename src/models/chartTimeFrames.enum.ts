@@ -1,4 +1,5 @@
 export enum BinanceChartTimeFrames {
+  chart5minute = "5m",
   chart15minute = "15m",
   chart1hour = "1h",
   chart2hour = "2h",

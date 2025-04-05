@@ -8,4 +8,5 @@ export interface RsiDivergenceResult {
   divergence: RsiDivergenceTypes;
   timeFrame: BinanceChartTimeFrames;
   direction: RsiDivergenceDirection;
+  candleDistance: number;
 }

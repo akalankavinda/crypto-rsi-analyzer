@@ -1,27 +1,37 @@
+import { RsiCandlestickData } from "../../models/candlestick-data.model";
+import { BinanceChartTimeFrames } from "../../models/chartTimeFrames.enum";
+import { RsiDivergenceResult } from "../../models/rsi-divergence-result.model";
+import {
+  RsiDivergenceDirection,
+  RsiDivergenceTypes,
+} from "../../models/rsi-divergence-types.enum";
 import { RsiProcessedData } from "../../models/rsi-processed-data.model";
 
 export class RsiBearishDivergenceService {
-  public static hasDivergence(rsiData: RsiProcessedData[]): boolean {
+  public static hasDivergence(
+    rsiData: RsiCandlestickData[],
+    timeFrame: BinanceChartTimeFrames
+  ): RsiDivergenceResult {
     const percentageLimit = 7.5;
 
     //---------------------- START OF BEARISH DIVERGENCE LOGIC ----------------------
 
     let rsiHighestTopIndex = rsiData.length - 1;
-    let rsiHighestTop: RsiProcessedData = rsiData[rsiHighestTopIndex];
+    let rsiHighestTop = rsiData[rsiHighestTopIndex];
 
     rsiData.forEach((item, index) => {
-      if (item.rsiValue > rsiHighestTop.rsiValue) {
+      if (item.rsi > rsiHighestTop.rsi) {
         rsiHighestTop = item;
         rsiHighestTopIndex = index;
       }
     });
 
-    let rsiSecondHighestTop: RsiProcessedData = rsiData[rsiData.length - 3];
+    let rsiSecondHighestTop = rsiData[rsiData.length - 3];
 
-    const last1stRsi = rsiData[rsiData.length - 2].rsiValue;
-    const last2ndRsi = rsiData[rsiData.length - 3].rsiValue;
-    const last3rdRsi = rsiData[rsiData.length - 4].rsiValue;
-    const last4thRsi = rsiData[rsiData.length - 5].rsiValue;
+    const last1stRsi = rsiData[rsiData.length - 2].rsi;
+    const last2ndRsi = rsiData[rsiData.length - 3].rsi;
+    const last3rdRsi = rsiData[rsiData.length - 4].rsi;
+    const last4thRsi = rsiData[rsiData.length - 5].rsi;
 
     // 1st condition
     let lastClosedCandleFormedLowerHigh =
@@ -31,7 +41,7 @@ export class RsiBearishDivergenceService {
 
     // 2nd condition
     let topsAreInOverboughtRegion =
-      rsiHighestTop.rsiValue > 73 && rsiSecondHighestTop.rsiValue > 63;
+      rsiHighestTop.rsi > 70 && rsiSecondHighestTop.rsi > 60;
 
     // 3rd condition
     let topsHasEnoughCandleGap =
@@ -39,28 +49,28 @@ export class RsiBearishDivergenceService {
 
     // 4th condition
     let rsiTopsShowDescendingOrder =
-      rsiHighestTop.rsiValue > rsiSecondHighestTop.rsiValue;
+      rsiHighestTop.rsi > rsiSecondHighestTop.rsi;
 
     // 5th condition
-    const rsiHighestTopFairClosePrice =
-      rsiHighestTop.closePrice - (rsiHighestTop.closePrice / 100) * 1.25;
+    // const rsiHighestTopFairClosePrice =
+    //   rsiHighestTop.closePrice - (rsiHighestTop.closePrice / 100) * 1;
     let pricesShowAscendingOrder =
-      rsiSecondHighestTop.closePrice > rsiHighestTopFairClosePrice;
+      rsiSecondHighestTop.close > rsiHighestTop.close;
 
     // 6th condition
     let noRsiTopsInBetween = true;
 
     // y = mx + c
     let bearGradient =
-      (rsiHighestTop.rsiValue - rsiSecondHighestTop.rsiValue) /
+      (rsiHighestTop.rsi - rsiSecondHighestTop.rsi) /
       (rsiHighestTop.eventNumber - rsiSecondHighestTop.eventNumber); // gradient (m) = (y-c) / x
 
     let bearIntercept =
-      rsiHighestTop.rsiValue - bearGradient * rsiHighestTop.eventNumber; // intercept (c) = y - mx
+      rsiHighestTop.rsi - bearGradient * rsiHighestTop.eventNumber; // intercept (c) = y - mx
 
     let topsTouchingLine: number[] = [];
 
-    rsiData.forEach((rsiWithPrice: RsiProcessedData) => {
+    rsiData.forEach((rsiWithPrice) => {
       topsTouchingLine.push(
         bearGradient * rsiWithPrice.eventNumber + bearIntercept
       );
@@ -71,21 +81,20 @@ export class RsiBearishDivergenceService {
       index < rsiData.length - 3;
       index++
     ) {
-      if (rsiData[index].rsiValue > topsTouchingLine[index]) {
+      if (rsiData[index].rsi > topsTouchingLine[index]) {
         noRsiTopsInBetween = false;
       }
     }
 
     // 7th condition
     let minPriceForRsiSecondHighestTop =
-      rsiHighestTop.closePrice +
-      (rsiHighestTop.closePrice / 100) * percentageLimit;
+      rsiHighestTop.close + (rsiHighestTop.close / 100) * percentageLimit;
 
     let rsiTopsHasConsiderableDiff =
-      rsiSecondHighestTop.rsiValue < rsiHighestTop.rsiValue - 10;
+      rsiSecondHighestTop.rsi < rsiHighestTop.rsi - 10;
 
     let topsPricesHasConsiderableDiff =
-      rsiSecondHighestTop.closePrice > minPriceForRsiSecondHighestTop;
+      rsiSecondHighestTop.close > minPriceForRsiSecondHighestTop;
 
     let rsiTopsValuesOrPricesHasConsiderableDiff =
       topsPricesHasConsiderableDiff || rsiTopsHasConsiderableDiff;
@@ -100,6 +109,20 @@ export class RsiBearishDivergenceService {
       noRsiTopsInBetween;
     // rsiTopsValuesOrPricesHasConsiderableDiff;
 
-    return rsiBearishDivergenceFormed;
+    const rsiResult: RsiDivergenceResult = {
+      divergence: RsiDivergenceTypes.NotAvailable,
+      timeFrame: timeFrame,
+      direction: RsiDivergenceDirection.NotAvailable,
+      candleDistance: 0,
+    };
+
+    if (rsiBearishDivergenceFormed) {
+      const candleDistance = rsiData.length - rsiHighestTopIndex;
+      rsiResult.divergence = RsiDivergenceTypes.Bearish;
+      rsiResult.direction = RsiDivergenceDirection.Bearish;
+      rsiResult.candleDistance = candleDistance;
+    }
+
+    return rsiResult;
   }
 }

@@ -8,7 +8,8 @@ export class RsiOversoldService {
   ): boolean {
     let lastClosedCandle = rsiData[rsiData.length - 2];
 
-    const lastCandleRsiIsBelowThreshold = lastClosedCandle.rsiValue < 12.5;
+    const lastCandleRsiIsBelowThreshold = lastClosedCandle.rsiValue < 15;
+    const lastCandleRsiIsExtreme = lastClosedCandle.rsiValue < 10;
 
     const lastCandleClosePrice = lastClosedCandle.closePrice;
     const last7thCandleClosePrice = rsiData[rsiData.length - 8].closePrice;
@@ -17,16 +18,15 @@ export class RsiOversoldService {
 
     let hasConsiderablePriceDrop = false;
 
-    if (timeFrame === BinanceChartTimeFrames.chart1hour) {
-      hasConsiderablePriceDrop = priceDropPercentage > 2.5;
-    } else if (timeFrame === BinanceChartTimeFrames.chart4hour) {
-      hasConsiderablePriceDrop = priceDropPercentage > 4.5;
-    } else if (timeFrame === BinanceChartTimeFrames.chart1Day) {
-      hasConsiderablePriceDrop = true;
+    if (lastCandleRsiIsBelowThreshold) {
+      if (timeFrame === BinanceChartTimeFrames.chart1hour) {
+        hasConsiderablePriceDrop = priceDropPercentage > 2.55;
+      } else if (timeFrame === BinanceChartTimeFrames.chart4hour) {
+        hasConsiderablePriceDrop = priceDropPercentage > 4.25;
+      }
     }
 
-    const hasOversold =
-      lastCandleRsiIsBelowThreshold && hasConsiderablePriceDrop;
+    const hasOversold = lastCandleRsiIsBelowThreshold || lastCandleRsiIsExtreme;
 
     return hasOversold;
   }

@@ -11,7 +11,8 @@ export class AlertMessageService {
   private static assetId = "BTC";
 
   public static async sendAlertMessage(
-    result: RsiDivergenceResult
+    result: RsiDivergenceResult,
+    imageData?: Uint8Array<ArrayBufferLike> | null
   ): Promise<void> {
     let directionEmoji = "⚪️";
     if (result.direction === RsiDivergenceDirection.Bullish) {
@@ -26,7 +27,12 @@ export class AlertMessageService {
     let messageForLogger = message.slice(3);
 
     if (result.divergence != RsiDivergenceTypes.NotAvailable) {
-      await TelegramService.pushAlertMessage(message);
+      if (imageData) {
+        await TelegramService.pushAlertWithChart(message, imageData);
+      } else {
+        await TelegramService.pushAlertMessage(message);
+      }
+
       Utils.logMessage("-------------------------");
       Utils.logMessage(messageForLogger);
       Utils.logMessage("-------------------------");
