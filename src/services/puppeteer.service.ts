@@ -3,13 +3,14 @@ import { RsiCandlestickData } from "../models/candlestick-data.model";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { RsiDivergenceResult } from "../models/rsi-divergence-result.model";
-import { time } from "console";
 import { Utils } from "./utils.service";
+import { CryptoAssetId } from "../models/cryptoAssetId.enum";
 
 export class PuppeteerService {
   private static browser: Browser | null = null;
 
   static async getChartImage(
+    assetId: CryptoAssetId,
     chartData: RsiCandlestickData[],
     divergenceResult: RsiDivergenceResult
   ): Promise<Uint8Array<ArrayBufferLike> | null> {
@@ -22,7 +23,7 @@ export class PuppeteerService {
 
     const rsiCandleGap = divergenceResult.candleDistance;
 
-    const title1 = `BTC/USDT ${divergenceResult.timeFrame.toUpperCase()}`;
+    const title1 = `${assetId} ${divergenceResult.timeFrame.toUpperCase()}`;
     const title2 = divergenceResult.divergence;
     const title3 = Utils.getDateTimeForLogging();
     const direction = divergenceResult.direction;
@@ -49,7 +50,9 @@ export class PuppeteerService {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // await page.screenshot({
-    //   path: `${chartData[chartData.length - 1].time}.png`,
+    //   path: `${assetId}-${divergenceResult.timeFrame}-${
+    //     chartData[chartData.length - 1].time
+    //   }.png`,
     // });
 
     const screenshotBuffer = await page.screenshot();

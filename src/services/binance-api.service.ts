@@ -4,7 +4,7 @@ import {
   RsiCandlestickData,
 } from "../models/candlestick-data.model";
 import { BinanceChartTimeFrames } from "../models/chartTimeFrames.enum";
-import { CryptoAssetIds } from "../models/cryptoAssetIds.enum";
+import { CryptoAssetId } from "../models/cryptoAssetId.enum";
 
 export class BinanceApiService {
   /*   [
@@ -34,7 +34,7 @@ export class BinanceApiService {
         this.binanceApiEndpoint +
           "?" +
           new URLSearchParams({
-            symbol: CryptoAssetIds.BTC,
+            symbol: CryptoAssetId.BTC,
             interval: timeFrame,
             limit: "1000",
           }).toString()
@@ -51,6 +51,7 @@ export class BinanceApiService {
   }
 
   public static async fetchCandlestickData(
+    assetId: CryptoAssetId,
     timeFrame: BinanceChartTimeFrames
   ): Promise<RsiCandlestickData[] | undefined> {
     try {
@@ -58,9 +59,9 @@ export class BinanceApiService {
         this.binanceApiEndpoint +
           "?" +
           new URLSearchParams({
-            symbol: CryptoAssetIds.BTC,
+            symbol: assetId,
             interval: timeFrame,
-            limit: "200",
+            limit: "250",
           }).toString()
       );
 
