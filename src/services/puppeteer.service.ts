@@ -5,6 +5,8 @@ import { join } from "path";
 import { RsiDivergenceResult } from "../models/rsi-divergence-result.model";
 import { Utils } from "./utils.service";
 import { CryptoAssetId } from "../models/cryptoAssetId.enum";
+const fs = require("fs").promises;
+const path = require("path");
 
 export class PuppeteerService {
   private static browser: Browser | null = null;
@@ -49,8 +51,9 @@ export class PuppeteerService {
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
+    // await this.createDirIfNotExists("backtests");
     // await page.screenshot({
-    //   path: `${assetId}-${divergenceResult.timeFrame}-${
+    //   path: `backtests/${assetId}-${divergenceResult.timeFrame}-${
     //     chartData[chartData.length - 1].time
     //   }.png`,
     // });
@@ -87,5 +90,13 @@ export class PuppeteerService {
   public static async closePage(): Promise<void> {
     // await new Promise((resolve) => setTimeout(resolve, 500000));
     await this.browser?.close();
+  }
+
+  private static async createDirIfNotExists(dirPath: string) {
+    try {
+      await fs.mkdir(dirPath, { recursive: true });
+    } catch (err) {
+      console.error(`Error creating directory: ${err}`);
+    }
   }
 }

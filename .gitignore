@@ -6,6 +6,9 @@ env.ts
 lib/**/*.js
 lib/**/*.js.map
 
+# backtest screenshots
+backtests/
+
 # TypeScript v1 declaration files
 typings/
 

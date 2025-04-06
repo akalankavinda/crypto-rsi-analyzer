@@ -56,6 +56,70 @@ export class RsiBearishDivergenceService {
       rsiSecondHighestTop.close >= rsiHighestTop.close;
 
     // 6th condition
+    let noRsiTopsInBetween = this.noRsiTopsInBetween(
+      rsiData,
+      rsiHighestTop,
+      rsiHighestTopIndex,
+      rsiSecondHighestTop
+    );
+
+    // 7th condition
+    let noCandlesClosedInBetween = this.noCandleCrossedInBetween(
+      rsiData,
+      rsiHighestTop,
+      rsiHighestTopIndex,
+      rsiSecondHighestTop
+    );
+
+    const noTrendLineBreaksInBetween =
+      noRsiTopsInBetween || noCandlesClosedInBetween;
+
+    // 8th condition
+    let minPriceForRsiSecondHighestTop =
+      rsiHighestTop.close + (rsiHighestTop.close / 100) * percentageLimit;
+
+    let rsiTopsHasConsiderableDiff =
+      rsiSecondHighestTop.rsi < rsiHighestTop.rsi - 10;
+
+    let topsPricesHasConsiderableDiff =
+      rsiSecondHighestTop.close > minPriceForRsiSecondHighestTop;
+
+    let rsiTopsValuesOrPricesHasConsiderableDiff =
+      topsPricesHasConsiderableDiff || rsiTopsHasConsiderableDiff;
+
+    // Check all conditions are passed
+    let rsiBearishDivergenceFormed =
+      topsAreInOverboughtRegion &&
+      topsHasEnoughCandleGap &&
+      rsiTopsShowDescendingOrder &&
+      pricesShowAscendingOrder &&
+      lastClosedCandleFormedLowerHigh &&
+      noTrendLineBreaksInBetween;
+    // rsiTopsValuesOrPricesHasConsiderableDiff;
+
+    const rsiResult: RsiDivergenceResult = {
+      divergence: RsiDivergenceTypes.NotAvailable,
+      timeFrame: timeFrame,
+      direction: RsiDivergenceDirection.NotAvailable,
+      candleDistance: 0,
+    };
+
+    if (rsiBearishDivergenceFormed) {
+      const candleDistance = rsiData.length - rsiHighestTopIndex;
+      rsiResult.divergence = RsiDivergenceTypes.Bearish;
+      rsiResult.direction = RsiDivergenceDirection.Bearish;
+      rsiResult.candleDistance = candleDistance;
+    }
+
+    return rsiResult;
+  }
+
+  private static noRsiTopsInBetween(
+    rsiData: RsiCandlestickData[],
+    rsiHighestTop: RsiCandlestickData,
+    rsiHighestTopIndex: number,
+    rsiSecondHighestTop: RsiCandlestickData
+  ): boolean {
     let noRsiTopsInBetween = true;
 
     // y = mx + c
@@ -84,43 +148,44 @@ export class RsiBearishDivergenceService {
       }
     }
 
-    // 7th condition
-    let minPriceForRsiSecondHighestTop =
-      rsiHighestTop.close + (rsiHighestTop.close / 100) * percentageLimit;
+    return noRsiTopsInBetween;
+  }
 
-    let rsiTopsHasConsiderableDiff =
-      rsiSecondHighestTop.rsi < rsiHighestTop.rsi - 10;
+  private static noCandleCrossedInBetween(
+    rsiData: RsiCandlestickData[],
+    rsiHighestTop: RsiCandlestickData,
+    rsiHighestTopIndex: number,
+    rsiSecondHighestTop: RsiCandlestickData
+  ): boolean {
+    let noCandlesClosedInBetween = true;
 
-    let topsPricesHasConsiderableDiff =
-      rsiSecondHighestTop.close > minPriceForRsiSecondHighestTop;
+    // y = mx + c
+    let bearGradient =
+      (rsiSecondHighestTop.close - rsiHighestTop.close) /
+      (rsiSecondHighestTop.eventNumber - rsiHighestTop.eventNumber); // gradient (m) = (y-c) / x
 
-    let rsiTopsValuesOrPricesHasConsiderableDiff =
-      topsPricesHasConsiderableDiff || rsiTopsHasConsiderableDiff;
+    let bearIntercept =
+      rsiSecondHighestTop.close -
+      bearGradient * rsiSecondHighestTop.eventNumber; // intercept (c) = y - mx
 
-    // Check all conditions are passed
-    let rsiBearishDivergenceFormed =
-      topsAreInOverboughtRegion &&
-      topsHasEnoughCandleGap &&
-      rsiTopsShowDescendingOrder &&
-      pricesShowAscendingOrder &&
-      lastClosedCandleFormedLowerHigh &&
-      noRsiTopsInBetween;
-    // rsiTopsValuesOrPricesHasConsiderableDiff;
+    let ClosingPricesTouchingLine: number[] = [];
 
-    const rsiResult: RsiDivergenceResult = {
-      divergence: RsiDivergenceTypes.NotAvailable,
-      timeFrame: timeFrame,
-      direction: RsiDivergenceDirection.NotAvailable,
-      candleDistance: 0,
-    };
+    rsiData.forEach((rsiWithPrice) => {
+      ClosingPricesTouchingLine.push(
+        bearGradient * rsiWithPrice.eventNumber + bearIntercept
+      );
+    });
 
-    if (rsiBearishDivergenceFormed) {
-      const candleDistance = rsiData.length - rsiHighestTopIndex;
-      rsiResult.divergence = RsiDivergenceTypes.Bearish;
-      rsiResult.direction = RsiDivergenceDirection.Bearish;
-      rsiResult.candleDistance = candleDistance;
+    for (
+      let index = rsiHighestTopIndex + 1;
+      index < rsiData.length - 3;
+      index++
+    ) {
+      if (rsiData[index].close > ClosingPricesTouchingLine[index]) {
+        noCandlesClosedInBetween = false;
+      }
     }
 
-    return rsiResult;
+    return noCandlesClosedInBetween;
   }
 }

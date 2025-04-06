@@ -1,10 +1,10 @@
 export enum CryptoAssetId {
   BTC = "BTCUSDT",
   ETH = "ETHUSDT",
-  // XRP = "XRPUSDT",
+  XRP = "XRPUSDT",
   BNB = "BNBUSDT",
-  // SOL = "SOLUSDT",
+  SOL = "SOLUSDT",
   DOGE = "DOGEUSDT",
-  // TRX = "TRXUSDT",
-  // ADA = "ADAUSDT",
+  TRX = "TRXUSDT",
+  ADA = "ADAUSDT",
 }

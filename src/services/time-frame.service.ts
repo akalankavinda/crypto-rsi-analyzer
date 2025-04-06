@@ -3,6 +3,13 @@ import { BinanceChartTimeFrames } from "../models/chartTimeFrames.enum";
 export class TimeFrameService {
   public static getTimeFramesToAnalyze(): BinanceChartTimeFrames[] {
     const timeFramesToAnalyze: BinanceChartTimeFrames[] = [];
+    // const timeFramesToAnalyze: BinanceChartTimeFrames[] = [
+    //   BinanceChartTimeFrames.chart15minute,
+    //   BinanceChartTimeFrames.chart1hour,
+    //   BinanceChartTimeFrames.chart2hour,
+    //   BinanceChartTimeFrames.chart4hour,
+    //   BinanceChartTimeFrames.chart1Day,
+    // ];
 
     const today = new Date();
     const currentMinute = today.getUTCMinutes();

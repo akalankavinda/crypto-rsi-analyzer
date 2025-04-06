@@ -12,7 +12,7 @@ async function runAnalyzer(): Promise<void> {
   // Just to make sure last candle is closed before the analyzer runs
   await new Promise((resolve) => setTimeout(() => resolve(0), 1000));
 
-  const assetIdList = Object.values(CryptoAssetId);
+  const assetIdList = [CryptoAssetId.BTC];
   await analyzeAssets(assetIdList);
 }
 

@@ -26,30 +26,6 @@ export class BinanceApiService {
 
   private static binanceApiEndpoint = `https://api.binance.com/api/v3/klines`;
 
-  public static async getClosingPricesList(
-    timeFrame: BinanceChartTimeFrames
-  ): Promise<number[] | undefined> {
-    try {
-      let response = await fetch(
-        this.binanceApiEndpoint +
-          "?" +
-          new URLSearchParams({
-            symbol: CryptoAssetId.BTC,
-            interval: timeFrame,
-            limit: "1000",
-          }).toString()
-      );
-
-      const data = await response.json();
-
-      return (data as any[]).map((candleData: any[]) => candleData[4]);
-    } catch (error) {
-      console.log("failed to fetch data from binance api", error);
-    }
-
-    return undefined;
-  }
-
   public static async fetchCandlestickData(
     assetId: CryptoAssetId,
     timeFrame: BinanceChartTimeFrames
@@ -61,7 +37,7 @@ export class BinanceApiService {
           new URLSearchParams({
             symbol: assetId,
             interval: timeFrame,
-            limit: "250",
+            limit: "200",
           }).toString()
       );
 
