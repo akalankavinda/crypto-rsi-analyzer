@@ -1,4 +1,5 @@
 import { BinanceChartTimeFrames } from "../models/chartTimeFrames.enum";
+import { CryptoAssetId } from "../models/cryptoAssetId.enum";
 import { RsiDivergenceResult } from "../models/rsi-divergence-result.model";
 import {
   RsiDivergenceDirection,
@@ -8,9 +9,8 @@ import { TelegramService } from "./telegram.service";
 import { Utils } from "./utils.service";
 
 export class AlertMessageService {
-  private static assetId = "BTC";
-
   public static async sendAlertMessage(
+    assetId: CryptoAssetId,
     result: RsiDivergenceResult,
     imageData?: Uint8Array<ArrayBufferLike> | null
   ): Promise<void> {
@@ -22,8 +22,9 @@ export class AlertMessageService {
     }
 
     const paddedTimeFrame = result.timeFrame.padEnd(3);
+    const assetIdWithoutUsdt = assetId.replace("USDT", "");
 
-    let message = `${directionEmoji} ${this.assetId} ${paddedTimeFrame} ${result.divergence}`;
+    let message = `${directionEmoji} ${assetIdWithoutUsdt} ${paddedTimeFrame} ${result.divergence}`;
     let messageForLogger = message.slice(3);
 
     if (result.divergence != RsiDivergenceTypes.NotAvailable) {

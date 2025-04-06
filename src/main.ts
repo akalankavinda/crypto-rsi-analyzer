@@ -93,7 +93,11 @@ async function findOpportunities(
       rsiDivergenceResult
     );
   }
-  await AlertMessageService.sendAlertMessage(rsiDivergenceResult, chartImage);
+  await AlertMessageService.sendAlertMessage(
+    assetId,
+    rsiDivergenceResult,
+    chartImage
+  );
 }
 
 runAnalyzer();
