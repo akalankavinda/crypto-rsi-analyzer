@@ -9,6 +9,66 @@
         margin: 0;
         padding: 0;
       }
+
+      .legend-container {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        z-index: 1;
+        font-size: 14px;
+        font-family: sans-serif;
+        line-height: 18px;
+        font-weight: 300;
+        padding: 5px 10px;
+        background-color: #141823;
+        margin: 60px 30px;
+        box-shadow: 0px 0px 20px 17px rgb(20 24 35);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .legend-container.bearish {
+        top: 360px;
+      }
+
+      .legend-title-1 {
+        color: #f3f3f3;
+        font-size: 40px;
+      }
+
+      .legend-title-2 {
+        font-size: 28px;
+        padding-top: 20px;
+      }
+
+      .legend-title-3 {
+        color: #a5a5a5;
+        font-size: 18px;
+        padding-top: 10px;
+      }
+
+      .direction-indicator {
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        margin-right: 20px;
+      }
+
+      .direction-indicator.bullish {
+        background-color: #16d974;
+      }
+
+      .direction-indicator.bearish {
+        background-color: #ff4923;
+      }
+
+      .legend-title-2.bullish {
+        color: #16d974;
+      }
+      .legend-title-2.bearish {
+        color: #ff4923;
+      }
     </style>
     <script src="https://unpkg.com/lightweight-charts@5.0.5/dist/lightweight-charts.standalone.production.js"></script>
   </head>
@@ -106,6 +166,8 @@
         borderColor: "#fff",
       });
 
+      ///////////////////////////////
+
       function setChartData(chartData, rsiChartData, candleGap) {
         candlestickSeries.setData(chartData);
         rsiSeries.setData(rsiChartData);
@@ -167,6 +229,42 @@
             value: rsiChartData[rsiChartData.length - 3].value,
           },
         ]);
+      }
+
+      ///////////////////////////////
+
+      function setChartLegend(title1, title2, title3, direction) {
+        const container = document.body;
+
+        const legend = document.createElement("div");
+        legend.classList.add("legend-container");
+        legend.classList.add(direction);
+        container.appendChild(legend);
+
+        const legendDirectionIndicator = document.createElement("div");
+        legendDirectionIndicator.classList.add("direction-indicator");
+        legendDirectionIndicator.classList.add(direction);
+        legend.appendChild(legendDirectionIndicator);
+
+        const legendTitleContainer = document.createElement("div");
+        legendTitleContainer.classList.add("title-container");
+        legend.appendChild(legendTitleContainer);
+
+        const legendTitle1 = document.createElement("div");
+        legendTitle1.innerHTML = title1;
+        legendTitle1.classList.add("legend-title-1");
+        legendTitleContainer.appendChild(legendTitle1);
+
+        const legendTitle2 = document.createElement("div");
+        legendTitle2.innerHTML = title2;
+        legendTitle2.classList.add("legend-title-2");
+        legendTitle2.classList.add(direction);
+        legendTitleContainer.appendChild(legendTitle2);
+
+        const legendTitle3 = document.createElement("div");
+        legendTitle3.innerHTML = title3;
+        legendTitle3.classList.add("legend-title-3");
+        legendTitleContainer.appendChild(legendTitle3);
       }
     </script>
   </body>

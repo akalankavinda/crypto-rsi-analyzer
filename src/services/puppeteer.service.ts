@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { RsiDivergenceResult } from "../models/rsi-divergence-result.model";
 import { time } from "console";
+import { Utils } from "./utils.service";
 
 export class PuppeteerService {
   private static browser: Browser | null = null;
@@ -21,6 +22,11 @@ export class PuppeteerService {
 
     const rsiCandleGap = divergenceResult.candleDistance;
 
+    const title1 = `BTC/USDT ${divergenceResult.timeFrame.toUpperCase()}`;
+    const title2 = divergenceResult.divergence;
+    const title3 = Utils.getDateTimeForLogging();
+    const direction = divergenceResult.direction;
+
     await page.evaluate(
       (chartData, rsiChartData, rsiCandleGap) => {
         (globalThis as any).setChartData(chartData, rsiChartData, rsiCandleGap);
@@ -30,7 +36,21 @@ export class PuppeteerService {
       rsiCandleGap
     );
 
+    await page.evaluate(
+      (title1, title2, title3, direction) => {
+        (globalThis as any).setChartLegend(title1, title2, title3, direction);
+      },
+      title1,
+      title2,
+      title3,
+      direction
+    );
+
     await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // await page.screenshot({
+    //   path: `${chartData[chartData.length - 1].time}.png`,
+    // });
 
     const screenshotBuffer = await page.screenshot();
 
@@ -44,6 +64,7 @@ export class PuppeteerService {
     const htmlContent = readFileSync(htmlFilePath, "utf-8");
 
     this.browser = await launch({
+      executablePath: "/usr/bin/chromium-browser",
       headless: true, // 👈 This makes the browser visible
       // defaultViewport: null, // Optional: use full window size
       // args: ["--start-maximized"], // Optional: open window maximized
@@ -61,6 +82,7 @@ export class PuppeteerService {
   }
 
   public static async closePage(): Promise<void> {
+    // await new Promise((resolve) => setTimeout(resolve, 500000));
     await this.browser?.close();
   }
 }

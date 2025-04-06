@@ -29,15 +29,14 @@ async function executeAnalysis(): Promise<void> {
       //     timeFrame
       //   );
       //   if (rsiDivergenceResult.divergence != RsiDivergenceTypes.NotAvailable) {
-      //     console.log(rsiDivergenceResult, index);
       //     const chartImage = await PuppeteerService.getChartImage(
       //       dataPart,
       //       rsiDivergenceResult
       //     );
-      //     // await AlertMessageService.sendAlertMessage(
-      //     //   rsiDivergenceResult,
-      //     //   chartImage
-      //     // );
+      //     await AlertMessageService.sendAlertMessage(
+      //       rsiDivergenceResult,
+      //       chartImage
+      //     );
       //   }
       // }
 
