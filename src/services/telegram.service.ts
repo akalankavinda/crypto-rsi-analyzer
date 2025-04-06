@@ -55,7 +55,6 @@ export class TelegramService {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(response);
     } catch (error) {
       console.log("failed to push data to telegram api", error);
     }

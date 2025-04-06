@@ -22,19 +22,12 @@ export class RsiDivergenceService {
     candlestickData: RsiCandlestickData[],
     timeFrame: BinanceChartTimeFrames
   ): RsiDivergenceResult {
-    /* closingPrices = [......................., (last_candle - 2), (last_candle - 1), last_candle] */
-
-    // const rsi14PeriodData = this.extractRsiDataFromClosingPrices(
-    //   closingPrices,
-    //   14
-    // );
-
     const selectedCandlestickData = candlestickData.slice(
       candlestickData.length - 66,
       candlestickData.length
     );
 
-    const rsiResult: RsiDivergenceResult = {
+    const noDivergenceResult: RsiDivergenceResult = {
       divergence: RsiDivergenceTypes.NotAvailable,
       timeFrame: timeFrame,
       direction: RsiDivergenceDirection.NotAvailable,
@@ -57,6 +50,10 @@ export class RsiDivergenceService {
       return rsiBearishResult;
     }
 
+    if (timeFrame === BinanceChartTimeFrames.chart5minute) {
+      return noDivergenceResult;
+    }
+
     const rsiHiddenBullishResult =
       RsiHiddenBullishDivergenceService.hasDivergence(
         selectedCandlestickData,
@@ -66,15 +63,16 @@ export class RsiDivergenceService {
       return rsiHiddenBullishResult;
     }
 
-    const rsiHiddenBearishResult = RsiBearishDivergenceService.hasDivergence(
-      selectedCandlestickData,
-      timeFrame
-    );
+    const rsiHiddenBearishResult =
+      RsiHiddenBearishDivergenceService.hasDivergence(
+        selectedCandlestickData,
+        timeFrame
+      );
     if (rsiHiddenBearishResult.divergence == RsiDivergenceTypes.HiddenBearish) {
       return rsiHiddenBearishResult;
     }
 
-    return rsiResult;
+    return noDivergenceResult;
 
     ///////////////////////////////////////////////////////
 
@@ -117,7 +115,7 @@ export class RsiDivergenceService {
     //   }
     // }
 
-    return rsiResult;
+    return noDivergenceResult;
   }
 
   private static extractRsiDataFromClosingPrices(

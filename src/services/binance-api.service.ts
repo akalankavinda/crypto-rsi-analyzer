@@ -60,7 +60,7 @@ export class BinanceApiService {
           new URLSearchParams({
             symbol: CryptoAssetIds.BTC,
             interval: timeFrame,
-            limit: "1000",
+            limit: "200",
           }).toString()
       );
 

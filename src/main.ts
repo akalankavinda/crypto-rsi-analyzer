@@ -34,10 +34,10 @@ async function executeAnalysis(): Promise<void> {
       //       dataPart,
       //       rsiDivergenceResult
       //     );
-      //     await AlertMessageService.sendAlertMessage(
-      //       rsiDivergenceResult,
-      //       chartImage
-      //     );
+      //     // await AlertMessageService.sendAlertMessage(
+      //     //   rsiDivergenceResult,
+      //     //   chartImage
+      //     // );
       //   }
       // }
 
@@ -45,7 +45,6 @@ async function executeAnalysis(): Promise<void> {
         candleStickData,
         timeFrame
       );
-
       let chartImage: Uint8Array<ArrayBufferLike> | null = null;
       if (rsiDivergenceResult.divergence !== RsiDivergenceTypes.NotAvailable) {
         chartImage = await PuppeteerService.getChartImage(
@@ -53,7 +52,6 @@ async function executeAnalysis(): Promise<void> {
           rsiDivergenceResult
         );
       }
-
       await AlertMessageService.sendAlertMessage(
         rsiDivergenceResult,
         chartImage
