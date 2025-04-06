@@ -35,13 +35,11 @@ export class RsiBearishDivergenceService {
 
     // 1st condition
     let lastClosedCandleFormedLowerHigh =
-      last1stRsi < last2ndRsi &&
-      last2ndRsi > last3rdRsi &&
-      last3rdRsi > last4thRsi;
+      last1stRsi < last2ndRsi && last2ndRsi > last3rdRsi;
 
     // 2nd condition
     let topsAreInOverboughtRegion =
-      rsiHighestTop.rsi > 70 && rsiSecondHighestTop.rsi > 60;
+      rsiHighestTop.rsi > 70 && rsiSecondHighestTop.rsi > 65;
 
     // 3rd condition
     let topsHasEnoughCandleGap =
@@ -49,13 +47,13 @@ export class RsiBearishDivergenceService {
 
     // 4th condition
     let rsiTopsShowDescendingOrder =
-      rsiHighestTop.rsi > rsiSecondHighestTop.rsi;
+      rsiHighestTop.rsi + 2 >= rsiSecondHighestTop.rsi;
 
     // 5th condition
     // const rsiHighestTopFairClosePrice =
-    //   rsiHighestTop.closePrice - (rsiHighestTop.closePrice / 100) * 1;
+    //   rsiHighestTop.close - (rsiHighestTop.close / 100) * 1;
     let pricesShowAscendingOrder =
-      rsiSecondHighestTop.close > rsiHighestTop.close;
+      rsiSecondHighestTop.close >= rsiHighestTop.close;
 
     // 6th condition
     let noRsiTopsInBetween = true;

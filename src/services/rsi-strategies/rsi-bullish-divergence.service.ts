@@ -35,13 +35,11 @@ export class RsiBullishDivergenceService {
 
     // 1st condition
     let lastClosedCandleFormedSecondLowestBottom =
-      last1stRsi > last2ndRsi &&
-      last2ndRsi < last3rdRsi &&
-      last3rdRsi < last4thRsi;
+      last1stRsi > last2ndRsi && last2ndRsi < last3rdRsi;
 
     // 2nd condition
     let bottomsAreInOversoldRegion =
-      rsiLowestBottom.rsi < 30 && rsiSecondLowestBottom.rsi < 40;
+      rsiLowestBottom.rsi < 35 && rsiSecondLowestBottom.rsi < 40;
 
     // 3rd condition
     let bottomsHasEnoughCandleGap =
@@ -49,11 +47,11 @@ export class RsiBullishDivergenceService {
 
     // 4th condition
     let rsiBottomsShowAscendingOrder =
-      rsiSecondLowestBottom.rsi > rsiLowestBottom.rsi;
+      rsiSecondLowestBottom.rsi >= rsiLowestBottom.rsi - 2;
 
     // 5th condition
     // const rsiLowestBottomFairClosePrice =
-    //   rsiLowestBottom.closePrice + (rsiLowestBottom.closePrice / 100) * 1;
+    //   rsiLowestBottom.close + (rsiLowestBottom.close / 100) * 1;
     let pricesShowDescendingOrder =
       rsiSecondLowestBottom.close < rsiLowestBottom.close;
 
