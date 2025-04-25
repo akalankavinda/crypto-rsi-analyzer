@@ -5,6 +5,7 @@ import {
 } from "../models/candlestick-data.model";
 import { BinanceChartTimeFrames } from "../models/chartTimeFrames.enum";
 import { CryptoAssetId } from "../models/cryptoAssetId.enum";
+import { Utils } from "./utils.service";
 
 export class BinanceApiService {
   /*   [
@@ -37,7 +38,7 @@ export class BinanceApiService {
           new URLSearchParams({
             symbol: assetId,
             interval: timeFrame,
-            limit: "200",
+            limit: Utils.isBackTesting() ? "1500" : "150",
           }).toString()
       );
 

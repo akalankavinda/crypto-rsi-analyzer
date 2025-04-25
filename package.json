@@ -2,7 +2,8 @@
   "name": "functions",
   "scripts": {
     "build": "node build.js",
-    "start": "node build.js && node dist/crypto-rsi-analyzer.js"
+    "start": "node build.js && node dist/crypto-rsi-analyzer.js",
+    "backtest": "node build.js && node dist/crypto-rsi-analyzer.js --backtest"
   },
   "engines": {
     "node": "18"

@@ -19,4 +19,8 @@ export class Utils {
     const messageWithDateTime = `${Utils.getDateTimeForLogging()} | ${message}`;
     console.log(messageWithDateTime);
   }
+
+  public static isBackTesting(): boolean {
+    return process.argv.includes("--backtest");
+  }
 }

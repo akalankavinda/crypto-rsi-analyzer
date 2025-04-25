@@ -7,6 +7,7 @@ import { PuppeteerService } from "./services/puppeteer.service";
 import { CryptoAssetId } from "./models/cryptoAssetId.enum";
 import { BinanceChartTimeFrames } from "./models/chartTimeFrames.enum";
 import { RsiCandlestickData } from "./models/candlestick-data.model";
+import { Utils } from "./services/utils.service";
 
 async function runAnalyzer(): Promise<void> {
   // Just to make sure last candle is closed before the analyzer runs
@@ -44,8 +45,11 @@ async function analyzeAssetChartData(
   );
 
   if (candleStickData) {
-    // await backTestStrategies(assetId, timeFrame, candleStickData);
-    await findOpportunities(assetId, timeFrame, candleStickData);
+    if (Utils.isBackTesting()) {
+      await backTestStrategies(assetId, timeFrame, candleStickData);
+    } else {
+      await findOpportunities(assetId, timeFrame, candleStickData);
+    }
   }
 }
 
@@ -69,10 +73,6 @@ async function backTestStrategies(
         dataPart,
         rsiDivergenceResult
       );
-      // await AlertMessageService.sendAlertMessage(
-      //   rsiDivergenceResult,
-      //   chartImage
-      // );
     }
   }
 }
@@ -100,25 +100,18 @@ async function findOpportunities(
   );
 }
 
+// run analyzer once and exit
+// -> works best with crontab
+//
 runAnalyzer();
 
-/* 
-===============================================================================
-||  -------- Following section is added to keep the process alive --------   ||
-||  If you are running the analyzer as a cronjob, comment out the following  ||
-||  section so that the process will exit after the analysis is done         ||
-===============================================================================
-*/
+//----------------------------------------------
 
-// Start of keep-alive section ================================================
-//
-// Utils.logMessage("-------------------------");
-// Utils.logMessage("Analyzer started");
-// Utils.logMessage("-------------------------");
+// keep the process alive
+// -> for running directly from terminal, or
+// -> running through pm2
 
 // const reTryInterval = 1000 * 60; // 1 minute
 // setInterval(() => {
-//   executeAnalysis();
+//   runAnalyzer();
 // }, reTryInterval);
-//
-// End of keep-alive section ===================================================

@@ -51,12 +51,14 @@ export class PuppeteerService {
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // await this.createDirIfNotExists("backtests");
-    // await page.screenshot({
-    //   path: `backtests/${assetId}-${divergenceResult.timeFrame}-${
-    //     chartData[chartData.length - 1].time
-    //   }.png`,
-    // });
+    if (Utils.isBackTesting()) {
+      await this.createDirIfNotExists("backtests");
+      await page.screenshot({
+        path: `backtests/${assetId}-${divergenceResult.timeFrame}-${
+          chartData[chartData.length - 1].time
+        }.png`,
+      });
+    }
 
     const screenshotBuffer = await page.screenshot();
 
@@ -70,7 +72,7 @@ export class PuppeteerService {
     const htmlContent = readFileSync(htmlFilePath, "utf-8");
 
     this.browser = await launch({
-      executablePath: "/usr/bin/chromium-browser",
+      // executablePath: "/usr/bin/chromium-browser",
       headless: true, // 👈 This makes the browser visible
       // defaultViewport: null, // Optional: use full window size
       // args: ["--start-maximized"], // Optional: open window maximized
